@@ -57,6 +57,7 @@ class App {
 
     // Search Input
     this.dom.searchInput.addEventListener('input', (e) => this.handleSearch(e.target.value));
+    this.dom.searchInput.addEventListener('focus', (e) => this.handleSearch(e.target.value));
 
     // Chat Form Submit
     this.dom.chatForm.addEventListener('submit', (e) => this.handleSendMessage(e));
@@ -214,7 +215,7 @@ class App {
     }
 
     try {
-      const res = await fetch(`/api/users/search?q=${encodeURIComponent(cleanQ)}&exclude=${this.currentUser.username}`);
+      const res = await fetch(`/api/users/search?q=${encodeURIComponent(cleanQ)}`);
       const data = await res.json();
       this.renderContactsList(data.users || []);
     } catch (err) {
@@ -232,6 +233,7 @@ class App {
 
     users.forEach(user => {
       const item = document.createElement('div');
+      const isSelf = this.currentUser && this.currentUser.username.toLowerCase() === user.username.toLowerCase();
       const isSelected = this.activeChatContact?.username.toLowerCase() === user.username.toLowerCase();
       item.className = `contact-item ${isSelected ? 'active' : ''}`;
       
@@ -244,14 +246,16 @@ class App {
         <div class="status-dot ${isOnline ? 'online' : ''}"></div>
         <div class="contact-details">
           <div class="contact-name-row">
-            <span class="contact-name">${this.escapeHTML(user.displayName || user.username)}</span>
+            <span class="contact-name">${this.escapeHTML(user.displayName || user.username)} ${isSelf ? '<small style="opacity: 0.6; font-size: 11px;">(You)</small>' : ''}</span>
             ${unreadCount > 0 ? `<span class="unread-badge">${unreadCount}</span>` : ''}
           </div>
           <span class="contact-handle">@${this.escapeHTML(user.username)}</span>
         </div>
       `;
 
-      item.addEventListener('click', () => this.selectChatContact(user));
+      if (!isSelf) {
+        item.addEventListener('click', () => this.selectChatContact(user));
+      }
       this.dom.contactsList.appendChild(item);
     });
   }

@@ -72,11 +72,9 @@ class UserStore {
 
   searchUsers(query, excludeUsername = '') {
     const q = query.trim().toLowerCase().replace(/^@/, '');
-    const exclude = excludeUsername.trim().toLowerCase();
     const results = [];
 
     for (const user of this.users.values()) {
-      if (user.username.toLowerCase() === exclude) continue;
       if (!q || user.username.toLowerCase().includes(q) || user.displayName.toLowerCase().includes(q)) {
         results.push({
           username: user.username,
