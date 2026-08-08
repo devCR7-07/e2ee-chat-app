@@ -285,7 +285,6 @@ class App {
       this.dom.chatAvatar.textContent = this.activeChatContact.displayName.charAt(0).toUpperCase();
 
       this.loadActiveChatMessages();
-      this.loadContactsList(); // Refresh list active state
     } catch (err) {
       console.error('Failed to select chat:', err);
       alert('Error establishing E2EE session with user.');

@@ -76,8 +76,8 @@ class UserStore {
     const results = [];
 
     for (const user of this.users.values()) {
-      if (user.username === exclude) continue;
-      if (!q || user.username.includes(q) || user.displayName.toLowerCase().includes(q)) {
+      if (user.username.toLowerCase() === exclude) continue;
+      if (!q || user.username.toLowerCase().includes(q) || user.displayName.toLowerCase().includes(q)) {
         results.push({
           username: user.username,
           displayName: user.displayName,
@@ -85,7 +85,7 @@ class UserStore {
         });
       }
     }
-    return results.slice(0, 20); // Limit to top 20 matches
+    return results.slice(0, 20);
   }
 
   queueOfflineMessage(toUsername, messagePayload) {
