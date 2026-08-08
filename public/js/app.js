@@ -30,6 +30,7 @@ class App {
 
       searchInput: document.getElementById('search-input'),
       contactsList: document.getElementById('contacts-list'),
+      contactsSectionTitle: document.querySelector('.contacts-section-title'),
 
       welcomeScreen: document.getElementById('welcome-screen'),
       activeChatView: document.getElementById('active-chat-view'),
@@ -193,6 +194,9 @@ class App {
   // --- CONTACTS & SEARCH ---
 
   async loadContactsList() {
+    if (this.dom.contactsSectionTitle) {
+      this.dom.contactsSectionTitle.textContent = 'Conversations';
+    }
     const contacts = await StorageManager.getAllContacts();
     contacts.forEach(c => this.contactsMap.set(c.username, c));
     this.renderContactsList(contacts);
@@ -203,6 +207,10 @@ class App {
     if (!cleanQ) {
       this.loadContactsList();
       return;
+    }
+
+    if (this.dom.contactsSectionTitle) {
+      this.dom.contactsSectionTitle.textContent = 'Search Results';
     }
 
     try {
@@ -260,8 +268,15 @@ class App {
           publicKeyJWK: data.publicKey,
           isOnline: data.isOnline
         };
-        await StorageManager.saveContact(contactObj);
-        this.contactsMap.set(contactObj.username, contactObj);
+      }
+
+      // Always save contact so it stays in Conversations list
+      await StorageManager.saveContact(contactObj);
+      this.contactsMap.set(contactObj.username, contactObj);
+
+      // Clear search input & restore Conversations title
+      if (this.dom.searchInput.value) {
+        this.dom.searchInput.value = '';
       }
 
       // 2. Import Public Key & Derive Shared AES Key
@@ -285,6 +300,7 @@ class App {
       this.dom.chatAvatar.textContent = this.activeChatContact.displayName.charAt(0).toUpperCase();
 
       this.loadActiveChatMessages();
+      this.loadContactsList(); // Refresh Conversations list
     } catch (err) {
       console.error('Failed to select chat:', err);
       alert('Error establishing E2EE session with user.');
