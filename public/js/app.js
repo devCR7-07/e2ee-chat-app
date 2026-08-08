@@ -232,19 +232,22 @@ class App {
 
     users.forEach(user => {
       const item = document.createElement('div');
-      item.className = `contact-item ${this.activeChatContact?.username === user.username ? 'active' : ''}`;
+      const isSelected = this.activeChatContact?.username.toLowerCase() === user.username.toLowerCase();
+      item.className = `contact-item ${isSelected ? 'active' : ''}`;
       
       const initial = (user.displayName || user.username).charAt(0).toUpperCase();
-      const isOnline = user.isOnline || (this.contactsMap.get(user.username)?.isOnline);
+      const isOnline = user.isOnline || (this.contactsMap.get(user.username.toLowerCase())?.isOnline);
+      const unreadCount = user.unread || 0;
 
       item.innerHTML = `
         <div class="avatar-circle">${initial}</div>
         <div class="status-dot ${isOnline ? 'online' : ''}"></div>
         <div class="contact-details">
           <div class="contact-name-row">
-            <span class="contact-name">${user.displayName}</span>
+            <span class="contact-name">${this.escapeHTML(user.displayName || user.username)}</span>
+            ${unreadCount > 0 ? `<span class="unread-badge">${unreadCount}</span>` : ''}
           </div>
-          <span class="contact-handle">@${user.username}</span>
+          <span class="contact-handle">@${this.escapeHTML(user.username)}</span>
         </div>
       `;
 
@@ -257,22 +260,24 @@ class App {
 
   async selectChatContact(user) {
     try {
+      const cleanUsername = user.username.toLowerCase();
       // 1. Fetch full public key if needed
-      let contactObj = this.contactsMap.get(user.username);
-      if (!contactObj || !contactObj.publicKeyJWK) {
-        const res = await fetch(`/api/users/${user.username}`);
+      let contactObj = this.contactsMap.get(cleanUsername);
+      if (!contactObj || !contactObj.publicKeyJWK || !contactObj.displayName) {
+        const res = await fetch(`/api/users/${cleanUsername}`);
         const data = await res.json();
         contactObj = {
           username: data.username,
-          displayName: data.displayName,
+          displayName: data.displayName || data.username,
           publicKeyJWK: data.publicKey,
           isOnline: data.isOnline
         };
       }
 
-      // Always save contact so it stays in Conversations list
+      // Clear unread count when opening chat
+      contactObj.unread = 0;
       await StorageManager.saveContact(contactObj);
-      this.contactsMap.set(contactObj.username, contactObj);
+      this.contactsMap.set(cleanUsername, contactObj);
 
       // Clear search input & restore Conversations title
       if (this.dom.searchInput.value) {
@@ -315,7 +320,7 @@ class App {
   }
 
   renderMessageBubble(msg) {
-    const isSent = msg.from === this.currentUser.username;
+    const isSent = msg.from.toLowerCase() === this.currentUser.username.toLowerCase();
     const bubble = document.createElement('div');
     bubble.className = `message-bubble ${isSent ? 'sent' : 'received'}`;
 
@@ -358,7 +363,7 @@ class App {
       // 2. Send Ciphertext over WebSocket
       this.ws.send({
         type: 'ENCRYPTED_MESSAGE',
-        to: this.activeChatContact.username,
+        to: this.activeChatContact.username.toLowerCase(),
         ciphertext: encrypted.ciphertext,
         iv: encrypted.iv,
         timestamp,
@@ -368,9 +373,9 @@ class App {
       // 3. Save plaintext locally in IndexedDB
       const msgObj = {
         messageId,
-        chatWith: this.activeChatContact.username,
-        from: this.currentUser.username,
-        to: this.activeChatContact.username,
+        chatWith: this.activeChatContact.username.toLowerCase(),
+        from: this.currentUser.username.toLowerCase(),
+        to: this.activeChatContact.username.toLowerCase(),
         text,
         timestamp
       };
@@ -387,20 +392,25 @@ class App {
 
   async handleIncomingMessage(data) {
     const { from, ciphertext, iv, timestamp, messageId } = data;
+    const senderUsername = (from || '').trim().toLowerCase();
+    if (!senderUsername) return;
 
     try {
-      // Ensure we have contact's public key & shared AES key
-      let contactObj = this.contactsMap.get(from);
-      if (!contactObj || !contactObj.publicKeyJWK) {
-        const res = await fetch(`/api/users/${from}`);
+      // Ensure we have contact's public key & shared AES key & Display Name
+      let contactObj = this.contactsMap.get(senderUsername);
+      if (!contactObj || !contactObj.publicKeyJWK || !contactObj.displayName) {
+        const res = await fetch(`/api/users/${senderUsername}`);
         const userApiData = await res.json();
-        contactObj = {
-          username: userApiData.username,
-          displayName: userApiData.displayName,
-          publicKeyJWK: userApiData.publicKey
-        };
-        await StorageManager.saveContact(contactObj);
-        this.contactsMap.set(from, contactObj);
+        if (res.ok && userApiData.publicKey) {
+          contactObj = {
+            username: userApiData.username,
+            displayName: userApiData.displayName || userApiData.username,
+            publicKeyJWK: userApiData.publicKey,
+            isOnline: userApiData.isOnline
+          };
+          await StorageManager.saveContact(contactObj);
+          this.contactsMap.set(senderUsername, contactObj);
+        }
       }
 
       const importedPubKey = await CryptoEngine.importPublicKeyFromJWK(contactObj.publicKeyJWK);
@@ -414,9 +424,9 @@ class App {
 
       const msgObj = {
         messageId,
-        chatWith: from,
-        from,
-        to: this.currentUser.username,
+        chatWith: senderUsername,
+        from: senderUsername,
+        to: this.currentUser.username.toLowerCase(),
         text: decryptedText,
         timestamp
       };
@@ -424,9 +434,18 @@ class App {
       await StorageManager.saveMessage(msgObj);
 
       // Render if currently chatting with this user
-      if (this.activeChatContact && this.activeChatContact.username === from) {
+      if (this.activeChatContact && this.activeChatContact.username.toLowerCase() === senderUsername) {
         this.renderMessageBubble(msgObj);
         this.scrollToBottom();
+      } else {
+        // Increment unread count & auto-add sender to recipient's conversations list
+        contactObj.unread = (contactObj.unread || 0) + 1;
+        await StorageManager.saveContact(contactObj);
+
+        if (this.dom.searchInput.value) {
+          this.dom.searchInput.value = '';
+        }
+        await this.loadContactsList();
       }
     } catch (err) {
       console.error('Failed to decrypt incoming message:', err);
