@@ -25,11 +25,19 @@ export class WSManager {
         username: this.username
       });
       this.emit('connection_status', { connected: true });
+
+      clearInterval(this.pingInterval);
+      this.pingInterval = setInterval(() => {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+          this.send({ type: 'PING' });
+        }
+      }, 25000);
     };
 
     this.ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
+        if (data.type === 'PONG') return;
         this.emit(data.type, data);
       } catch (err) {
         console.error('Failed to parse WS message:', err);
@@ -38,6 +46,7 @@ export class WSManager {
 
     this.ws.onclose = () => {
       console.warn('⚠️ WebSocket connection closed. Retrying in 3s...');
+      clearInterval(this.pingInterval);
       this.emit('connection_status', { connected: false });
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = setTimeout(() => {

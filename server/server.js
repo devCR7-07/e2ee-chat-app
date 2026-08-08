@@ -82,6 +82,11 @@ wss.on('connection', (ws) => {
       const data = JSON.parse(rawMessage);
 
       switch (data.type) {
+        case 'PING': {
+          ws.send(JSON.stringify({ type: 'PONG' }));
+          break;
+        }
+
         case 'AUTHENTICATE': {
           const { username } = data;
           const user = userStore.getUser(username);
