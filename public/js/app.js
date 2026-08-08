@@ -45,7 +45,8 @@ class App {
       safetyModal: document.getElementById('safety-modal'),
       safetyFriendName: document.getElementById('safety-friend-name'),
       safetyFingerprint: document.getElementById('safety-fingerprint'),
-      closeSafetyModalBtn: document.getElementById('close-safety-modal')
+      closeSafetyModalBtn: document.getElementById('close-safety-modal'),
+      mobileBackBtn: document.getElementById('mobile-back-btn')
     };
   }
 
@@ -65,6 +66,13 @@ class App {
     // Security Verification Modal
     this.dom.securityVerifyBtn.addEventListener('click', () => this.openSafetyModal());
     this.dom.closeSafetyModalBtn.addEventListener('click', () => this.dom.safetyModal.classList.add('hidden'));
+
+    // Mobile Back Button
+    if (this.dom.mobileBackBtn) {
+      this.dom.mobileBackBtn.addEventListener('click', () => {
+        this.dom.chatDashboard.classList.remove('mobile-chat-open');
+      });
+    }
 
     // WebSocket Event Listeners
     this.ws.on('NEW_ENCRYPTED_MESSAGE', (data) => this.handleIncomingMessage(data));
@@ -270,6 +278,7 @@ class App {
       // 3. Update UI
       this.dom.welcomeScreen.classList.add('hidden');
       this.dom.activeChatView.classList.remove('hidden');
+      this.dom.chatDashboard.classList.add('mobile-chat-open');
       this.dom.chatTitle.textContent = this.activeChatContact.displayName;
       this.dom.chatStatus.textContent = this.activeChatContact.isOnline ? 'Online' : 'Offline';
       this.dom.chatAvatar.textContent = this.activeChatContact.displayName.charAt(0).toUpperCase();
