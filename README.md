@@ -6,9 +6,6 @@
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
 A software-based, **Zero-Knowledge End-to-End Encrypted (E2EE) Real-Time Web Chat Application**. Built using native browser cryptography (Web Crypto API) and a lightweight Node.js WebSocket relay server.
-
-Live Demo: [CipherTalk on Render](https://chatbug-zgpl.onrender.com)
-
 ---
 
 ## 🛡️ Security & Cryptographic Architecture
