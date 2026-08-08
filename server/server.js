@@ -20,6 +20,11 @@ const activeSockets = new Map();
 
 // --- REST API ENDPOINTS ---
 
+// Keep-Alive Ping
+app.get('/api/ping', (req, res) => {
+  res.json({ status: 'ok', timestamp: Date.now() });
+});
+
 // Register User
 app.post('/api/auth/register', (req, res) => {
   const { username, displayName, publicKey } = req.body;

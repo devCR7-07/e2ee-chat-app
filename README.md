@@ -1,4 +1,4 @@
-# 🔐 CipherTalk — End-to-End Encrypted Secure Web Messenger
+# 🔐 ChatBug — End-to-End Encrypted Secure Web Messenger
 
 ![Node.js](https://img.shields.io/badge/Node.js-v18%2B-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
 ![Web Crypto API](https://img.shields.io/badge/Cryptography-Web_Crypto_API-blueviolet?style=for-the-badge&logo=googlechrome&logoColor=white)
@@ -10,7 +10,7 @@ A software-based, **Zero-Knowledge End-to-End Encrypted (E2EE) Real-Time Web Cha
 
 ## 🛡️ Security & Cryptographic Architecture
 
-CipherTalk operates on a **Zero-Knowledge Model**. Messages are encrypted on the sender's device before transmission and decrypted strictly on the recipient's device. The central server acts as a dumb relay—it holds **zero private keys** and **zero plaintext messages**.
+ChatBug operates on a **Zero-Knowledge Model**. Messages are encrypted on the sender's device before transmission and decrypted strictly on the recipient's device. The central server acts as a dumb relay—it holds **zero private keys** and **zero plaintext messages**.
 
 ```
 [ Sender (Alice's Device) ]                       [ Relay Server (Node.js) ]                [ Recipient (Bob's Device) ]

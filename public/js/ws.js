@@ -9,6 +9,20 @@ export class WSManager {
     this.username = null;
     this.eventListeners = new Map();
     this.reconnectTimer = null;
+    this.httpKeepAliveInterval = null;
+
+    // Wake-up listener when user unlocks phone or switches back to tab after 30+ mins
+    const handleWakeup = () => {
+      if (this.username && (!this.ws || this.ws.readyState !== WebSocket.OPEN)) {
+        console.log('⚡ Tab woke up / gained focus. Reconnecting WebSocket...');
+        this.connect(this.username);
+      }
+    };
+
+    window.addEventListener('focus', handleWakeup);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') handleWakeup();
+    });
   }
 
   connect(username) {
@@ -32,6 +46,12 @@ export class WSManager {
           this.send({ type: 'PING' });
         }
       }, 25000);
+
+      // HTTP keep-alive fetch every 4 mins to prevent Render free-tier from idling out
+      clearInterval(this.httpKeepAliveInterval);
+      this.httpKeepAliveInterval = setInterval(() => {
+        fetch('/api/ping').catch(() => {});
+      }, 4 * 60 * 1000);
     };
 
     this.ws.onmessage = (event) => {
