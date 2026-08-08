@@ -1,0 +1,24 @@
+{
+  "name": "e2ee-chat-app",
+  "version": "1.0.0",
+  "description": "End-to-End Encrypted Real-Time Chat Web Application",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node --watch server/server.js"
+  },
+  "keywords": [
+    "cybersecurity",
+    "e2ee",
+    "web-crypto",
+    "websockets",
+    "encryption"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "ws": "^8.17.0"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "users": [
+    {
+      "username": "alice_123",
+      "displayName": "Alice",
+      "publicKey": {
+        "crv": "P-256",
+        "ext": true,
+        "key_ops": [],
+        "kty": "EC",
+        "x": "SEA1giHy3abnK_ownRTS6ud1IJypK5etwNimshFa0CE",
+        "y": "3Z_pZ5xFYlj3YFa71_6qsWuWqNTt9iAyfaemrojFOYQ"
+      },
+      "createdAt": "2026-08-08T17:43:26.695Z"
+    },
+    {
+      "username": "bob_1",
+      "displayName": "bob",
+      "publicKey": {
+        "crv": "P-256",
+        "ext": true,
+        "key_ops": [],
+        "kty": "EC",
+        "x": "AgOLaGfQtFSd_AWbZWDCGNEnPzstBL7wJVv-vVSJLUk",
+        "y": "Wb2Kl58QISZdIX5xk0ftySZ3ONCgdJf9613MVjFSUXo"
+      },
+      "createdAt": "2026-08-08T17:44:23.772Z"
+    }
+  ],
+  "offlineMessages": {}
+}
