@@ -71,7 +71,7 @@ class UserStore {
   }
 
   searchUsers(query, excludeUsername = '') {
-    const q = query.trim().toLowerCase();
+    const q = query.trim().toLowerCase().replace(/^@/, '');
     const exclude = excludeUsername.trim().toLowerCase();
     const results = [];
 

@@ -199,13 +199,14 @@ class App {
   }
 
   async handleSearch(query) {
-    if (!query.trim()) {
+    const cleanQ = query.trim().toLowerCase().replace(/^@/, '');
+    if (!cleanQ) {
       this.loadContactsList();
       return;
     }
 
     try {
-      const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}&exclude=${this.currentUser.username}`);
+      const res = await fetch(`/api/users/search?q=${encodeURIComponent(cleanQ)}&exclude=${this.currentUser.username}`);
       const data = await res.json();
       this.renderContactsList(data.users || []);
     } catch (err) {
